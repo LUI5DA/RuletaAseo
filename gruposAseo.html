@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Distribución de Grupos de Aseo</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f2f2;
+      text-align: center;
+      padding: 30px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #333;
+    }
+
+    button {
+      background-color: #007bff;
+      border: none;
+      color: white;
+      padding: 12px 20px;
+      margin: 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .grupo {
+      margin-top: 30px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: inline-block;
+      min-width: 300px;
+      text-align: left;
+    }
+
+    .grupo h2 {
+      color: #444;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 5px;
+    }
+
+    .grupo ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .grupo li {
+      padding: 5px 0;
+      font-size: 1.1rem;
+    }
+
+    .ruleta {
+      margin: 40px auto;
+      font-size: 1.5rem;
+      height: 40px;
+      min-width: 200px;
+      font-weight: bold;
+      color: #007bff;
+      animation: blink 0.2s infinite alternate;
+    }
+
+    @keyframes blink {
+      from {opacity: 1;}
+      to {opacity: 0.4;}
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Grupos de Aseo</h1>
+  <button onclick="iniciarAsignación()">Iniciar Ruleta</button>
+  <div class="ruleta" id="ruleta"></div>
+  <div id="gruposContainer"></div>
+
+  <script>
+    // Lista de personas con su sexo
+    const personas = [
+      { nombre: "Alonso", sexo: "M" },
+      { nombre: "Gabriel", sexo: "M" },
+      //{ nombre: "Reychel", sexo: "F" },
+      { nombre: "Denzel", sexo: "M" },
+      { nombre: "Diego", sexo: "M" },
+      { nombre: "Eddie", sexo: "M" },
+      { nombre: "Luis Q", sexo: "M" },
+      { nombre: "Mariana", sexo: "F" },
+      { nombre: "Jordana", sexo: "F" },
+      { nombre: "Luis D", sexo: "M" },
+      { nombre: "Sofia", sexo: "F" },
+      { nombre: "Dixon", sexo: "M" },
+      { nombre: "Jostin", sexo: "M" },
+      { nombre: "Yaleni", sexo: "F" },
+      { nombre: "Mario", sexo: "M" },
+      {nombre: "Juleska", sexo: "F"}
+      //{nombre: "Daniela", sexo: "F"},
+      //{nombre: "Diana", sexo: "F"}
+    ];
+
+    // Definición de grupos: cuántos y filtro por sexo si aplica
+    const gruposDefinidos = {
+      "Baño Hombres":   { cantidad: 2, filtro: p => p.sexo === 'M' },
+      "Cocina":         { cantidad: 4 },
+      "Comedor":        { cantidad: 4 },
+      "Pasillos":        { cantidad: 3 },
+      "Compostajes":        { cantidad: 2 },
+      //"Lavandería":     { cantidad: 3 }, 
+    };
+
+    let disponibles, grupos, ruletaInterval;
+
+    // Función para “barajar” un array
+    function mezclar(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    // Comienza la asignación reseteando estados
+    function iniciarAsignación() {
+      disponibles = [...personas];
+      grupos = {};
+      document.getElementById("gruposContainer").innerHTML = "";
+      girarPorGrupo(Object.entries(gruposDefinidos), 0);
+    }
+
+    // Recorre cada grupo y selecciona las personas una a una
+    function girarPorGrupo(listaGrupos, idx) {
+      if (idx >= listaGrupos.length) return;
+
+      const [nombreGrupo, config] = listaGrupos[idx];
+      const cantidad = config.cantidad;
+      const filtro = config.filtro || (() => true);
+      grupos[nombreGrupo] = [];
+
+      function seleccionarUno(i) {
+        // Si ya completamos este grupo, lo mostramos y pasamos al siguiente
+        if (i >= cantidad) {
+          mostrarGrupo(nombreGrupo, grupos[nombreGrupo]);
+          setTimeout(() => girarPorGrupo(listaGrupos, idx + 1), 1000);
+          return;
+        }
+
+        // Filtramos candidatos activos
+        const candidatos = disponibles.filter(filtro);
+        if (candidatos.length === 0) {
+          console.warn(`No quedan candidatos para ${nombreGrupo}`);
+          mostrarGrupo(nombreGrupo, grupos[nombreGrupo]);
+          setTimeout(() => girarPorGrupo(listaGrupos, idx + 1), 1000);
+          return;
+        }
+
+        // Inicia animación de ruleta
+        let animIndex = 0;
+        const nombresAnim = mezclar([...candidatos]).map(p => p.nombre);
+        const ruleta = document.getElementById("ruleta");
+        clearInterval(ruletaInterval);
+        ruletaInterval = setInterval(() => {
+          ruleta.textContent = nombresAnim[animIndex % nombresAnim.length];
+          animIndex++;
+        }, 80);
+
+        // Después de un tiempo aleatorio, detenemos y elegimos
+        setTimeout(() => {
+          clearInterval(ruletaInterval);
+          const elegido = candidatos[Math.floor(Math.random() * candidatos.length)];
+          ruleta.textContent = `🎯 ${elegido.nombre}`;
+
+          // Lo agregamos al grupo y lo quitamos de disponibles
+          grupos[nombreGrupo].push(elegido);
+          const idxDisp = disponibles.findIndex(p => p.nombre === elegido.nombre);
+          if (idxDisp !== -1) disponibles.splice(idxDisp, 1);
+
+          // Pasamos al siguiente cupo
+          setTimeout(() => seleccionarUno(i + 1), 1000);
+        }, 1200 + Math.random() * 500);
+      }
+
+      seleccionarUno(0);
+    }
+
+    // Renderiza un grupo en pantalla
+    function mostrarGrupo(nombre, personas) {
+      const container = document.getElementById("gruposContainer");
+      const div = document.createElement("div");
+      div.className = "grupo";
+
+      const h2 = document.createElement("h2");
+      h2.textContent = nombre;
+
+      const ul = document.createElement("ul");
+      personas.forEach(p => {
+        const li = document.createElement("li");
+        li.textContent = p.nombre;
+        ul.appendChild(li);
+      });
+
+      div.appendChild(h2);
+      div.appendChild(ul);
+      container.appendChild(div);
+    }
+  </script>
+
+</body>
+</html>
