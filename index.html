@@ -90,29 +90,30 @@
       //{ nombre: "Reychel", sexo: "F" },
       { nombre: "Denzel", sexo: "M" },
       { nombre: "Diego", sexo: "M" },
-      { nombre: "Eddie", sexo: "M" },
+      //{ nombre: "Eddie", sexo: "M" },
       { nombre: "Luis Q", sexo: "M" },
       { nombre: "Mariana", sexo: "F" },
       { nombre: "Jordana", sexo: "F" },
       { nombre: "Luis D", sexo: "M" },
-      { nombre: "Sofia", sexo: "F" },
+      //{ nombre: "Sofia", sexo: "F" },
       { nombre: "Dixon", sexo: "M" },
       { nombre: "Jostin", sexo: "M" },
       { nombre: "Yaleni", sexo: "F" },
       { nombre: "Mario", sexo: "M" },
       {nombre: "Juleska", sexo: "F"}
-      //{nombre: "Daniela", sexo: "F"},
-      //{nombre: "Diana", sexo: "F"}
+      {nombre: "Daniela", sexo: "F"},
+      {nombre: "Diana", sexo: "F"}
     ];
 
     // Definición de grupos: cuántos y filtro por sexo si aplica
     const gruposDefinidos = {
       "Baño Hombres":   { cantidad: 2, filtro: p => p.sexo === 'M' },
+      "Baño Mujeres":   { cantidad: 2, filtro: p => p.sexo === 'F' },
       "Cocina":         { cantidad: 4 },
       "Comedor":        { cantidad: 4 },
-      "Pasillos":        { cantidad: 3 },
-      "Compostajes":        { cantidad: 2 },
-      //"Lavandería":     { cantidad: 3 }, 
+      //"Pasillos":        { cantidad: 3 },
+      //"Compostajes":        { cantidad: 2 },
+      "Lavandería":     { cantidad: 3 }, 
     };
 
     let disponibles, grupos, ruletaInterval;
@@ -209,3 +210,4 @@
 
 </body>
 </html>
+
